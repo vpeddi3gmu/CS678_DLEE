@@ -32,7 +32,7 @@ class WIKI_Data_Loaders(nn.Module):
 
         self.sim_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
-    def create_gold_gen(self, ex, ontology_dict, mark_trigger=True, index=0, ent2info=None, use_info=False):
+    def wiki_gold_data_gen(self, ex, ontology_dict, mark_trigger=True, index=0, ent2info=None, use_info=False):
         '''
         If there are multiple events per example, use index parameter.
         Input: <s> Template with special <arg> placeholders </s> </s> Passage </s>
@@ -174,7 +174,7 @@ class WIKI_Data_Loaders(nn.Module):
             output_template, show_progress_bar=False)
         return tokenized_input_template, tokenized_template, context, context_emb, out_template_emb, ' '.join(context_words)
 
-    def prepare_data(self):
+    def preprocess_wiki_data(self):
         data_dir = 'preprocessed_{}'.format(self.hparams.dataset)
         if not os.path.exists(data_dir):
             os.makedirs(data_dir)
@@ -213,7 +213,7 @@ class WIKI_Data_Loaders(nn.Module):
                             if evt_type not in ontology_dict:  # should be a rare event type
                                 continue
 
-                            input_template, output_template, context, context_emb, out_template_emb, context_words = self.create_gold_gen(ex, ontology_dict, self.hparams.mark_trigger,
+                            input_template, output_template, context, context_emb, out_template_emb, context_words = self.wiki_gold_data_gen(ex, ontology_dict, self.hparams.mark_trigger,
                                                                                                                                           index=i, ent2info=ent2info, use_info=self.hparams.use_info)
 
                             most_sim_out_template = []
@@ -267,7 +267,7 @@ class WIKI_Data_Loaders(nn.Module):
                             }
                             writer.write(json.dumps(processed_ex) + '\n')
 
-    def train_dataloader(self):
+    def train_dataloader_dlee(self):
         
         dataset = WikiDataSet(
                 'preprocessed_{}/train.jsonl'.format(self.hparams.dataset))
@@ -279,7 +279,7 @@ class WIKI_Data_Loaders(nn.Module):
                                 shuffle=True)
         return dataloader
 
-    def val_dataloader(self):
+    def val_dataloader_dlee(self):
 
         dataset = WikiDataSet(
                 'preprocessed_{}/val.jsonl'.format(self.hparams.dataset))
@@ -289,7 +289,7 @@ class WIKI_Data_Loaders(nn.Module):
                                 batch_size=self.hparams.eval_batch_size, shuffle=False)
         return dataloader
 
-    def test_dataloader(self):
+    def test_dataloader_dlee(self):
             
         dataset = WikiDataSet(
                 'preprocessed_{}/test.jsonl'.format(self.hparams.dataset))

@@ -163,8 +163,8 @@ def main():
 
     os.makedirs(args.ckpt_dir)
 
-    dm = WIKI_Data_Loaders(args)
-    dm.prepare_data()
+    dlee_dl = WIKI_Data_Loaders(args)
+    dlee_dl.preprocess_wiki_data()
 
     model = DocLvlEventExt_Model(args)
     model = model.to(device)
@@ -173,7 +173,7 @@ def main():
     if args.max_steps < 0:
         args.max_epochs = args.min_epochs = args.num_train_epochs
 
-    train_len = len(dm.train_dataloader())
+    train_len = len(dlee_dl.train_dataloader_dlee())
     print("------------------>", train_len)  # dss needs to delete afterwards
     if args.max_steps > 0:
         t_total = args.max_steps
@@ -208,7 +208,7 @@ def main():
         smp_opts = []
         model.eval()
         with torch.no_grad():
-            for batch_idx, tst_batch in enumerate(dm.test_dataloader()):
+            for batch_idx, tst_batch in enumerate(dlee_dl.test_dataloader_dlee()):
                 tst_batch['input_token_ids'] = tst_batch['input_token_ids'].to(
                     device)
                 tst_batch['input_attn_mask'] = tst_batch['input_attn_mask'].to(
@@ -231,7 +231,7 @@ def main():
         for epoch in range(num_epochs):
             print("epoch:", epoch)
             model.train()
-            for batch_idx, train_btch in enumerate(dm.train_dataloader()):
+            for batch_idx, train_btch in enumerate(dlee_dl.train_dataloader_dlee()):
 
                 train_btch['input_token_ids'] = train_btch['input_token_ids'].to(
                     device)
